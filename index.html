@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Full JavaScript Blockly IDE</title>
+    <title>Blockly JavaScript IDE</title>
     <script src="https://unpkg.com/blockly/blockly.min.js"></script>
     <script src="https://unpkg.com/blockly/javascript_compressed.js"></script>
     <style>
@@ -29,14 +29,20 @@
             font-size: 16px;
             cursor: pointer;
         }
+        #copyButton {
+            background-color: #4CAF50;
+            color: white;
+        }
     </style>
 </head>
 <body>
 
-<h2 style="text-align:center;">🧱 Full JavaScript Blockly IDE</h2>
+<h2 style="text-align:center;">🧱 Blockly JavaScript IDE</h2>
 <div id="blocklyDiv"></div>
 <div style="text-align:center;">
     <button onclick="runCode()">▶ Run</button>
+    <button onclick="generateCode()">🔲 Generate Raw Code</button>
+    <button id="copyButton" onclick="copyCode()">📋 Copy Code</button>
 </div>
 <pre id="output"></pre>
 
@@ -142,6 +148,8 @@
 
     const outputElement = document.getElementById("output");
 
+    let codeToCopy = "";
+
     function clearOutput() {
         outputElement.innerText = '';
     }
@@ -150,12 +158,21 @@
         outputElement.innerText += msg + "\n";
     }
 
+    function generateCode() {
+        clearOutput();
+        const rawCode = Blockly.JavaScript.workspaceToCode(workspace);
+        printOutput("Generated JavaScript Code:\n\n" + rawCode);
+        codeToCopy = rawCode;
+    }
+
     function runCode() {
         clearOutput();
         const code = Blockly.JavaScript.workspaceToCode(workspace);
 
         const originalLog = console.log;
-        console.log = printOutput;
+        console.log = function(message) {
+            printOutput(message);
+        };
 
         try {
             eval(code);
@@ -164,6 +181,22 @@
         }
 
         console.log = originalLog;
+    }
+
+    function copyCode() {
+        if (codeToCopy === "") {
+            printOutput("❌ No code generated to copy.");
+            return;
+        }
+
+        const textArea = document.createElement('textarea');
+        textArea.value = codeToCopy;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+
+        printOutput("✔ Code copied to clipboard!");
     }
 </script>
 
